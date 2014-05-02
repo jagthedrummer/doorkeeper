@@ -49,6 +49,18 @@ feature 'Resource Owner Password Credentials Flow' do
       should_have_json 'access_token',  token.token
     end
 
+    scenario "should issue a useable new token without client credentials" do
+      expect {
+        post password_token_endpoint_url(:resource_owner => @resource_owner)
+      }.to change { Doorkeeper::AccessToken.count }.by(1)
+
+      token = JSON.parse(response.body).fetch('access_token')
+
+      get "/metal.json?access_token=#{token}"
+      should_have_json 'ok', true
+    end
+
+
     scenario "should issue a refresh token if enabled" do
       config_is_set(:refresh_token_enabled, true)
 
